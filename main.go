@@ -43,6 +43,44 @@ func Map[A, B any](slice []A, f func(A) B) []B {
 	return result
 }
 
+// Filter returns a new slice
+func Filter[A any](slice []A, p func(A) bool) []A {
+	result := make([]A, len(slice))
+	size := 0
+	for _, e := range slice {
+		if p(e) {
+			result[size] = e
+			size++
+		}
+	}
+	return result[:size]
+}
+
+// FilterInPlace modifies slice, but we need to return since we pass as copy
+func FilterInPlace[A any](slice []A, p func(A) bool) []A {
+	size := 0
+	for _, e := range slice {
+		if p(e) {
+			slice[size] = e
+			size++
+		}
+	}
+	slice = slice[:size]
+	return slice
+}
+
+// FilterInPlaceRef modifies slice
+func FilterInPlaceRef[A any](slice *[]A, p func(A) bool) {
+	size := 0
+	for _, e := range *slice {
+		if p(e) {
+			(*slice)[size] = e
+			size++
+		}
+	}
+	*slice = (*slice)[:size]
+}
+
 func main() {
 	// Initialize a map for the integer values
 	ints := map[string]int64{
@@ -64,7 +102,7 @@ func main() {
 		Sum(ints),
 		Sum(floats))
 
-	sliceInts := []int{1, 2, 3}
+	sliceInts := []int{1, 2, 3, 4, 5}
 	sliceStrings := []string{"1", "2", "3"}
 
 	fmt.Println(Map(sliceInts, func(a int) int {
@@ -74,4 +112,21 @@ func main() {
 	fmt.Println(Map(sliceStrings, func(a string) string {
 		return a + "!"
 	}))
+
+	fmt.Println(Filter(sliceInts, func(a int) bool {
+		return a < 3
+	}))
+
+	fmt.Println(FilterInPlace(sliceInts, func(a int) bool {
+		return a < 3
+	}))
+
+	copySliceInts := make([]int, len(sliceInts))
+	copy(copySliceInts, sliceInts)
+
+	FilterInPlaceRef(&copySliceInts, func(a int) bool {
+		return a < 3
+	})
+	fmt.Println(copySliceInts)
+
 }
